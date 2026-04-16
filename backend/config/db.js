@@ -1,18 +1,26 @@
 // config/db.js — Pool de connexions PostgreSQL
 const { Pool } = require('pg');
-require('dotenv').config();
 
-const pool = new Pool({
+// Support DATABASE_URL (Render/production) OU variables séparées (local)
+const poolConfig = process.env.DATABASE_URL ? {
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
+} : {
   host:     process.env.DB_HOST     || 'localhost',
-  port:     parseInt(process.env.DB_PORT || '5432'),
+  port:     parseInt(process.env.DB_PORT || '5433'),
   database: process.env.DB_NAME     || 'revex_db',
   user:     process.env.DB_USER     || 'postgres',
   password: process.env.DB_PASSWORD || '',
-  max: 20,            // Connexions simultanées max
+  max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+  connectionTimeoutMillis: 5000,
+  ssl: false,
+};
+
+const pool = new Pool(poolConfig);
 
 // Test de connexion au démarrage
 pool.connect((err, client, release) => {
@@ -21,32 +29,24 @@ pool.connect((err, client, release) => {
     process.exit(1);
   }
   release();
-  console.log('✅ PostgreSQL connecté :', process.env.DB_NAME || 'revex_db');
+  console.log('✅ PostgreSQL connecté');
 });
 
-/**
- * Exécute une requête SQL avec gestion d'erreurs
- * @param {string} text - Requête SQL
- * @param {Array} params - Paramètres
- */
 const query = async (text, params) => {
   const start = Date.now();
   try {
     const res = await pool.query(text, params);
     if (process.env.NODE_ENV === 'development') {
       const duration = Date.now() - start;
-      if (duration > 200) console.log(`⚠️ Slow query (${duration}ms):`, text.substring(0, 80));
+      if (duration > 200) console.log('⚠️ Slow query (' + duration + 'ms):', text.substring(0, 80));
     }
     return res;
   } catch (err) {
-    console.error('❌ Query error:', text.substring(0, 100), '\nParams:', params, '\nError:', err.message);
+    console.error('❌ Query error:', text.substring(0, 100), '\nError:', err.message);
     throw err;
   }
 };
 
-/**
- * Transaction helper
- */
 const withTransaction = async (callback) => {
   const client = await pool.connect();
   try {
