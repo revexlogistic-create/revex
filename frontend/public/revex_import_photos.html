@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>REVEX — Import photos en masse</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#F6F1E7;min-height:100vh}
+:root{
+  --forest:#1E3D0F;--leaf:#4A7C2F;--sage:#7EA86A;
+  --cream:#F6F1E7;--beige:#EDE6D3;--mid:#D9CEBC;
+  --white:#FDFAF4;--muted:#5C5C50;--eco:#27AE60;--urgent:#C0392B
+}
+nav{background:var(--forest);padding:1rem 2rem;display:flex;align-items:center;gap:1rem}
+.logo{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:var(--cream)}
+.logo span{color:var(--sage)}
+nav p{color:rgba(246,241,231,0.65);font-size:0.85rem}
+.container{max-width:960px;margin:0 auto;padding:2rem}
+h1{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--forest);margin-bottom:0.4rem}
+.subtitle{color:var(--muted);font-size:0.9rem;margin-bottom:2rem;line-height:1.6}
+
+/* LOGIN */
+#login-box{background:var(--white);border:1px solid var(--mid);border-radius:20px;padding:2rem;max-width:380px;margin:3rem auto}
+#login-box h2{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--forest);margin-bottom:1.2rem;text-align:center}
+.inp{width:100%;padding:0.7rem 1rem;border:1.5px solid var(--mid);border-radius:10px;font-size:0.9rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:0.8rem}
+.inp:focus{border-color:var(--sage)}
+.btn-primary{width:100%;background:var(--forest);color:var(--cream);border:none;padding:0.85rem;border-radius:100px;font-weight:600;font-size:0.95rem;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-primary:hover{background:var(--leaf)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+
+/* MAIN TOOL */
+#main{display:none}
+
+/* STEP INDICATOR */
+.steps{display:flex;gap:0;margin-bottom:2.5rem;background:var(--white);border:1px solid var(--mid);border-radius:16px;overflow:hidden}
+.step{flex:1;padding:1rem;text-align:center;border-right:1px solid var(--mid);transition:background 0.2s}
+.step:last-child{border-right:none}
+.step.active{background:var(--forest);color:var(--cream)}
+.step.done{background:#E8F8EE;color:var(--eco)}
+.step-num{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;display:block}
+.step-lbl{font-size:0.75rem;font-weight:500}
+
+/* HOW TO NAME */
+.info-box{background:var(--beige);border:1px solid var(--mid);border-radius:16px;padding:1.5rem;margin-bottom:2rem}
+.info-box h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--forest);margin-bottom:0.8rem}
+.info-box p{font-size:0.85rem;color:var(--muted);line-height:1.6}
+.example{background:var(--white);border-radius:10px;padding:0.8rem 1rem;margin-top:0.8rem;font-family:monospace;font-size:0.85rem;color:var(--forest)}
+
+/* DROP ZONE */
+.drop-zone{border:3px dashed var(--mid);border-radius:20px;padding:4rem 2rem;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--white);margin-bottom:1.5rem;position:relative}
+.drop-zone.dragover{border-color:var(--leaf);background:#E8F8EE}
+.drop-zone-icon{font-size:3.5rem;margin-bottom:1rem}
+.drop-zone h3{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--forest);margin-bottom:0.5rem}
+.drop-zone p{color:var(--muted);font-size:0.9rem}
+.drop-zone .hint{font-size:0.78rem;color:var(--muted);margin-top:0.5rem;opacity:0.7}
+#file-input{display:none}
+
+/* PREVIEW GRID */
+.preview-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.preview-header h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--forest)}
+.badge{display:inline-block;padding:0.25rem 0.7rem;border-radius:100px;font-size:0.75rem;font-weight:600}
+.badge-green{background:#E8F8EE;color:var(--eco)}
+.badge-red{background:#FDECEA;color:var(--urgent)}
+.badge-gray{background:var(--beige);color:var(--muted)}
+
+.preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;max-height:400px;overflow-y:auto;padding-right:4px}
+.preview-item{background:var(--white);border:1px solid var(--mid);border-radius:12px;overflow:hidden;position:relative}
+.preview-item.matched{border-color:var(--eco)}
+.preview-item.unmatched{border-color:var(--urgent);opacity:0.7}
+.preview-item.uploading{border-color:#E67E22}
+.preview-item.done{border-color:var(--eco);opacity:0.85}
+.preview-img{width:100%;height:110px;object-fit:cover;background:var(--beige);display:flex;align-items:center;justify-content:center}
+.preview-img img{width:100%;height:100%;object-fit:cover}
+.preview-info{padding:0.5rem 0.6rem}
+.preview-filename{font-size:0.68rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.preview-match{font-size:0.7rem;font-weight:600;margin-top:0.2rem}
+.preview-match.ok{color:var(--eco)}
+.preview-match.no{color:var(--urgent)}
+.preview-status{position:absolute;top:5px;right:5px;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700}
+.status-matched{background:var(--eco);color:#fff}
+.status-unmatched{background:var(--urgent);color:#fff}
+.status-done{background:var(--eco);color:#fff}
+.status-uploading{background:#E67E22;color:#fff;animation:pulse 0.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+/* SUMMARY BAR */
+.summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+.summary-card{background:var(--white);border:1px solid var(--mid);border-radius:14px;padding:1.2rem;text-align:center}
+.summary-val{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700}
+.summary-val.green{color:var(--eco)}
+.summary-val.red{color:var(--urgent)}
+.summary-val.orange{color:#E67E22}
+.summary-val.blue{color:#2980B9}
+.summary-lbl{font-size:0.75rem;color:var(--muted);margin-top:0.2rem}
+
+/* PROGRESS */
+.progress-section{background:var(--white);border:1px solid var(--mid);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;display:none}
+.progress-section.active{display:block}
+.progress-bar-bg{background:var(--beige);border-radius:100px;height:12px;overflow:hidden;margin:0.8rem 0}
+.progress-bar-fill{background:linear-gradient(90deg,var(--leaf),var(--sage));height:100%;border-radius:100px;transition:width 0.3s;width:0%}
+.progress-text{display:flex;justify-content:space-between;font-size:0.82rem;color:var(--muted)}
+.log{max-height:150px;overflow-y:auto;background:var(--cream);border-radius:10px;padding:0.8rem;font-family:monospace;font-size:0.75rem;line-height:1.7;margin-top:0.8rem}
+.log .ok{color:var(--eco)}
+.log .err{color:var(--urgent)}
+.log .info{color:#2980B9}
+
+/* ACTIONS */
+.actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn-big{padding:1rem 2.5rem;border-radius:100px;font-weight:700;font-size:1rem;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+.btn-big:hover{transform:translateY(-2px)}
+.btn-upload{background:var(--forest);color:var(--cream)}
+.btn-upload:hover{background:var(--leaf)}
+.btn-upload:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn-reset{background:transparent;color:var(--muted);border:1.5px solid var(--mid)}
+.btn-reset:hover{border-color:var(--forest);color:var(--forest)}
+
+/* RESULT */
+#result-section{display:none;background:var(--white);border:1px solid var(--mid);border-radius:20px;padding:2rem;text-align:center;margin-top:1.5rem}
+#result-section.success{border-color:var(--eco);background:#E8F8EE}
+#result-section.partial{border-color:#E67E22;background:#FEF5E7}
+#result-icon{font-size:4rem;margin-bottom:1rem}
+#result-section h2{font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--forest);margin-bottom:0.5rem}
+#result-section p{color:var(--muted);font-size:0.9rem}
+
+/* MSG */
+.msg{padding:0.7rem 1.2rem;border-radius:10px;font-size:0.85rem;margin-bottom:1rem;display:none}
+.msg.error{background:#FDECEA;color:var(--urgent);display:block}
+.msg.success{background:#E8F8EE;color:var(--eco);display:block}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">RE<span>VEX</span></div>
+  <p>📸 Import photos en masse — Tous les produits</p>
+</nav>
+
+<div class="container">
+
+  <!-- LOGIN -->
+  <div id="login-box">
+    <h2>🔐 Connexion Admin</h2>
+    <div id="login-msg" class="msg"></div>
+    <label>Email</label>
+    <input class="inp" type="email" id="email" value="admin@revex.ma" placeholder="admin@revex.ma"/>
+    <label>Mot de passe</label>
+    <input class="inp" type="password" id="password" value="Password123!" placeholder="Password123!"/>
+    <label>URL API</label>
+    <input class="inp" type="text" id="api-url" value="http://localhost:5000" placeholder="http://localhost:5000"/>
+    <button class="btn-primary" onclick="doLogin()">Se connecter</button>
+  </div>
+
+  <!-- MAIN TOOL -->
+  <div id="main">
+    <h1>📸 Ajouter des photos aux produits</h1>
+    <p class="subtitle">Sélectionne toutes tes images d'un coup — l'outil les associe automatiquement aux produits selon le nom du fichier.</p>
+
+    <!-- STEPS -->
+    <div class="steps">
+      <div class="step active" id="step1"><span class="step-num">1</span><span class="step-lbl">Nommer les images</span></div>
+      <div class="step" id="step2"><span class="step-num">2</span><span class="step-lbl">Sélectionner</span></div>
+      <div class="step" id="step3"><span class="step-num">3</span><span class="step-lbl">Vérifier</span></div>
+      <div class="step" id="step4"><span class="step-num">4</span><span class="step-lbl">Uploader</span></div>
+    </div>
+
+    <!-- INSTRUCTIONS -->
+    <div class="info-box" id="instructions">
+      <h3>📁 Comment nommer tes images ?</h3>
+      <p>Nomme chaque image avec la <strong>référence du produit</strong> (colonne "Article" dans ton Excel). L'outil trouvera automatiquement le bon produit.</p>
+      <div class="example">
+        ✅ 90004645.jpg &nbsp;&nbsp;→ CHAUSSURE DE SECURITE GENERALE<br>
+        ✅ 80074174.png &nbsp;&nbsp;→ MOBILE D AGITATION<br>
+        ✅ 80142580_1.jpg → ELIMINATEUR DE BRUMES (image 1)<br>
+        ✅ 80142580_2.jpg → ELIMINATEUR DE BRUMES (image 2)<br>
+        ❌ photo.jpg &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Non reconnu (pas de référence)
+      </div>
+      <p style="margin-top:0.8rem">💡 Tu peux mettre <strong>plusieurs images par produit</strong> en ajoutant _1, _2, _3 à la fin du nom.</p>
+    </div>
+
+    <!-- DROP ZONE -->
+    <div class="drop-zone" id="drop-zone"
+      ondragover="ev(event,'dragover')"
+      ondragleave="ev(event,'dragleave')"
+      ondrop="ev(event,'drop')"
+      onclick="document.getElementById('file-input').click()">
+      <div class="drop-zone-icon">🖼️</div>
+      <h3>Glisse tes images ici</h3>
+      <p>ou clique pour sélectionner plusieurs fichiers</p>
+      <p class="hint">JPG, PNG, WEBP — Taille max 5MB par image</p>
+      <input type="file" id="file-input" multiple accept="image/*" onchange="handleFiles(this.files)"/>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="summary-bar" id="summary-bar" style="display:none">
+      <div class="summary-card"><div class="summary-val blue" id="s-total">0</div><div class="summary-lbl">Images sélectionnées</div></div>
+      <div class="summary-card"><div class="summary-val green" id="s-matched">0</div><div class="summary-lbl">Produits trouvés ✅</div></div>
+      <div class="summary-card"><div class="summary-val red" id="s-unmatched">0</div><div class="summary-lbl">Non reconnus ❌</div></div>
+      <div class="summary-card"><div class="summary-val orange" id="s-products">0</div><div class="summary-lbl">Produits uniques</div></div>
+    </div>
+
+    <!-- PREVIEW GRID -->
+    <div id="preview-section" style="display:none">
+      <div class="preview-header">
+        <h3>Aperçu des images</h3>
+        <div style="display:flex;gap:0.5rem">
+          <span class="badge badge-green" id="badge-matched">0 associées</span>
+          <span class="badge badge-red" id="badge-unmatched">0 ignorées</span>
+        </div>
+      </div>
+      <div class="preview-grid" id="preview-grid"></div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-section" id="progress-section">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong style="color:var(--forest)">Upload en cours...</strong>
+        <span id="progress-label" style="font-size:0.85rem;color:var(--muted)">0 / 0</span>
+      </div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-bar"></div></div>
+      <div class="progress-text">
+        <span id="progress-current">Initialisation...</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="log" id="log"></div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions" id="actions" style="display:none">
+      <button class="btn-big btn-upload" id="upload-btn" onclick="startUpload()">
+        🚀 Lancer l'import des photos
+      </button>
+      <button class="btn-big btn-reset" onclick="reset()">
+        🔄 Recommencer
+      </button>
+    </div>
+
+    <!-- RESULT -->
+    <div id="result-section">
+      <div id="result-icon">✅</div>
+      <h2 id="result-title">Import terminé !</h2>
+      <p id="result-text"></p>
+      <button class="btn-big btn-upload" style="margin-top:1.5rem" onclick="window.open('http://localhost:3000/catalogue','_blank')">
+        Voir le catalogue 👀
+      </button>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /container -->
+
+<script>
+let TOKEN = '';
+let API = 'http://localhost:5000';
+let allFiles = [];       // {file, name, ref, productId, productTitle, status}
+let products = [];       // liste produits depuis l'API
+
+// ── LOGIN ──────────────────────────────────────────────────
+async function doLogin() {
+  const email    = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  API = document.getElementById('api-url').value.replace(/\/$/, '');
+  const msg = document.getElementById('login-msg');
+
+  try {
+    msg.className = 'msg';
+    msg.textContent = 'Connexion en cours...';
+    msg.style.display = 'block';
+
+    const res = await fetch(`${API}/api/auth/login`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email, password})
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Erreur de connexion');
+    if (data.user.role !== 'admin' && data.user.role !== 'seller') throw new Error('Accès réservé aux admins et vendeurs');
+
+    TOKEN = data.tokens.access;
+
+    // Charger tous les produits
+    msg.textContent = 'Chargement des produits...';
+    await loadAllProducts();
+
+    document.getElementById('login-box').style.display = 'none';
+    document.getElementById('main').style.display = 'block';
+
+  } catch(e) {
+    msg.className = 'msg error';
+    msg.textContent = '❌ ' + e.message;
+  }
+}
+
+async function loadAllProducts() {
+  products = [];
+  let page = 1;
+  let total = 1;
+
+  while (products.length < total) {
+    const res = await fetch(`${API}/api/products?limit=50&page=${page}&status=active`, {
+      headers: {'Authorization': `Bearer ${TOKEN}`}
+    });
+    const data = await res.json();
+    products = products.concat(data.products || []);
+    total = data.pagination?.total || products.length;
+    if ((data.products || []).length === 0) break;
+    page++;
+  }
+
+  // Admin voit tout
+  const res2 = await fetch(`${API}/api/admin/products?limit=100&status=active`, {
+    headers: {'Authorization': `Bearer ${TOKEN}`}
+  });
+  if (res2.ok) {
+    const d2 = await res2.json();
+    if (d2.products) {
+      // Merger sans doublons
+      const ids = new Set(products.map(p => p.id));
+      d2.products.forEach(p => { if (!ids.has(p.id)) products.push(p); });
+    }
+  }
+}
+
+// ── DRAG & DROP ────────────────────────────────────────────
+function ev(e, type) {
+  e.preventDefault();
+  const dz = document.getElementById('drop-zone');
+  if (type === 'dragover') dz.classList.add('dragover');
+  else if (type === 'dragleave') dz.classList.remove('dragover');
+  else if (type === 'drop') {
+    dz.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  }
+}
+
+function handleFiles(fileList) {
+  allFiles = [];
+  const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+
+  if (!files.length) { alert('Aucune image sélectionnée'); return; }
+
+  // Associer chaque image à un produit via sa référence dans le nom
+  files.forEach(file => {
+    const nameNoExt = file.name.replace(/\.[^.]+$/, '');
+    // Extraire la référence : partie numérique principale
+    const refMatch = nameNoExt.match(/^(\d+)/);
+    const ref = refMatch ? refMatch[1] : null;
+
+    let product = null;
+    if (ref) {
+      // Chercher dans les produits
+      product = products.find(p =>
+        p.reference === ref ||
+        String(p.reference) === ref ||
+        p.reference?.startsWith(ref) ||
+        p.title?.includes(ref)
+      );
+    }
+
+    allFiles.push({
+      file,
+      name: file.name,
+      ref: ref || '?',
+      productId: product?.id || null,
+      productTitle: product?.title || null,
+      status: product ? 'matched' : 'unmatched'
+    });
+  });
+
+  renderPreview();
+  updateSummary();
+  document.getElementById('drop-zone').style.display = 'none';
+  document.getElementById('instructions').style.display = 'none';
+  document.getElementById('preview-section').style.display = 'block';
+  document.getElementById('summary-bar').style.display = 'grid';
+  document.getElementById('actions').style.display = 'flex';
+
+  // Avancer les steps
+  setStep(3);
+}
+
+function renderPreview() {
+  const grid = document.getElementById('preview-grid');
+  grid.innerHTML = '';
+
+  allFiles.forEach((item, i) => {
+    const url = URL.createObjectURL(item.file);
+    const div = document.createElement('div');
+    div.className = `preview-item ${item.status}`;
+    div.id = `item-${i}`;
+    div.innerHTML = `
+      <div class="preview-img"><img src="${url}" alt=""/></div>
+      <div class="preview-status ${item.status === 'matched' ? 'status-matched' : 'status-unmatched'}">
+        ${item.status === 'matched' ? '✓' : '✗'}
+      </div>
+      <div class="preview-info">
+        <div class="preview-filename">${item.name}</div>
+        <div class="preview-match ${item.status === 'matched' ? 'ok' : 'no'}">
+          ${item.status === 'matched'
+            ? '✓ ' + (item.productTitle?.substring(0,25) + (item.productTitle?.length > 25 ? '...' : ''))
+            : '✗ Réf. non trouvée'}
+        </div>
+      </div>`;
+    grid.appendChild(div);
+  });
+}
+
+function updateSummary() {
+  const matched   = allFiles.filter(f => f.status === 'matched').length;
+  const unmatched = allFiles.filter(f => f.status === 'unmatched').length;
+  const uniqueProducts = new Set(allFiles.filter(f => f.productId).map(f => f.productId)).size;
+
+  document.getElementById('s-total').textContent     = allFiles.length;
+  document.getElementById('s-matched').textContent   = matched;
+  document.getElementById('s-unmatched').textContent = unmatched;
+  document.getElementById('s-products').textContent  = uniqueProducts;
+  document.getElementById('badge-matched').textContent   = matched + ' associées';
+  document.getElementById('badge-unmatched').textContent = unmatched + ' ignorées';
+}
+
+// ── UPLOAD ─────────────────────────────────────────────────
+async function startUpload() {
+  const toUpload = allFiles.filter(f => f.status === 'matched');
+  if (!toUpload.length) { alert('Aucune image associée à uploader !'); return; }
+
+  setStep(4);
+  document.getElementById('upload-btn').disabled = true;
+  document.getElementById('progress-section').classList.add('active');
+  const progressBar  = document.getElementById('progress-bar');
+  const progressLbl  = document.getElementById('progress-label');
+  const progressCur  = document.getElementById('progress-current');
+  const progressPct  = document.getElementById('progress-pct');
+  const log          = document.getElementById('log');
+
+  let done = 0, success = 0, errors = 0;
+  const total = toUpload.length;
+
+  // Grouper par produit
+  const byProduct = {};
+  toUpload.forEach(item => {
+    if (!byProduct[item.productId]) byProduct[item.productId] = [];
+    byProduct[item.productId].push(item);
+  });
+
+  const productIds = Object.keys(byProduct);
+
+  for (const productId of productIds) {
+    const items = byProduct[productId];
+    const productTitle = items[0].productTitle;
+
+    addLog(log, `info`, `⬆️ Upload ${items.length} photo(s) → ${productTitle?.substring(0,40)}...`);
+
+    try {
+      // 1. Upload les images
+      const formData = new FormData();
+      items.forEach(item => formData.append('images', item.file));
+
+      const uploadRes = await fetch(`${API}/api/upload/images?type=products`, {
+        method: 'POST',
+        headers: {'Authorization': `Bearer ${TOKEN}`},
+        body: formData
+      });
+
+      if (!uploadRes.ok) throw new Error('Erreur upload fichier');
+      const uploadData = await uploadRes.json();
+      const newUrls = uploadData.urls || [];
+
+      // 2. Récupérer les images existantes du produit
+      const prodRes = await fetch(`${API}/api/products/${productId}`, {
+        headers: {'Authorization': `Bearer ${TOKEN}`}
+      });
+      const prodData = await prodRes.json();
+      const existing = Array.isArray(prodData.product?.images)
+        ? prodData.product.images
+        : (prodData.product?.images ? JSON.parse(prodData.product.images) : []);
+
+      // 3. Mettre à jour le produit avec toutes les images
+      const allImages = [...existing, ...newUrls];
+      const updateRes = await fetch(`${API}/api/products/${productId}`, {
+        method: 'PUT',
+        headers: {'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json'},
+        body: JSON.stringify({ images: allImages })
+      });
+
+      if (!updateRes.ok) throw new Error('Erreur mise à jour produit');
+
+      // Marquer comme done dans la preview
+      items.forEach(item => {
+        const idx = allFiles.indexOf(item);
+        const el = document.getElementById(`item-${idx}`);
+        if (el) {
+          el.className = 'preview-item done';
+          el.querySelector('.preview-status').className = 'preview-status status-done';
+          el.querySelector('.preview-status').textContent = '✓';
+        }
+      });
+
+      success += items.length;
+      addLog(log, 'ok', `✅ ${items.length} photo(s) ajoutée(s) à "${productTitle?.substring(0,35)}"`);
+
+    } catch(e) {
+      errors += items.length;
+      addLog(log, 'err', `❌ Erreur : ${productTitle?.substring(0,35)} — ${e.message}`);
+    }
+
+    done += items.length;
+    const pct = Math.round((done / total) * 100);
+    progressBar.style.width = pct + '%';
+    progressLbl.textContent = `${done} / ${total}`;
+    progressCur.textContent = `${productTitle?.substring(0,40)}...`;
+    progressPct.textContent = pct + '%';
+  }
+
+  // Résultat final
+  const resultSection = document.getElementById('result-section');
+  resultSection.style.display = 'block';
+  resultSection.className = errors === 0 ? 'success' : 'partial';
+  document.getElementById('result-icon').textContent = errors === 0 ? '🎉' : '⚠️';
+  document.getElementById('result-title').textContent = errors === 0
+    ? 'Import terminé avec succès !'
+    : 'Import terminé avec quelques erreurs';
+  document.getElementById('result-text').textContent =
+    `${success} photos uploadées sur ${total} images traitées. ${errors > 0 ? errors + ' erreur(s).' : ''} Tes produits sont maintenant visibles avec leurs photos sur la marketplace !`;
+
+  addLog(log, 'ok', `🏁 Terminé : ${success} succès, ${errors} erreurs`);
+}
+
+function addLog(el, type, msg) {
+  const line = document.createElement('div');
+  line.className = type;
+  line.textContent = msg;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+function setStep(n) {
+  for(let i=1;i<=4;i++){
+    const el = document.getElementById(`step${i}`);
+    el.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
+  }
+}
+
+function reset() {
+  allFiles = [];
+  document.getElementById('drop-zone').style.display = 'block';
+  document.getElementById('instructions').style.display = 'block';
+  document.getElementById('preview-section').style.display = 'none';
+  document.getElementById('summary-bar').style.display = 'none';
+  document.getElementById('actions').style.display = 'none';
+  document.getElementById('progress-section').classList.remove('active');
+  document.getElementById('result-section').style.display = 'none';
+  document.getElementById('progress-bar').style.width = '0%';
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('upload-btn').disabled = false;
+  document.getElementById('file-input').value = '';
+  setStep(1);
+}
+</script>
+</body>
+</html>

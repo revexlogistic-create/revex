@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Fond carré arrondi vert -->
+  <rect width="32" height="32" rx="7" fill="#4A9065"/>
+  <!-- Texte RX blanc -->
+  <text x="16" y="22" text-anchor="middle" font-family="'DM Sans', Arial, sans-serif" font-weight="700" font-size="14" fill="#F4F6F4" letter-spacing="0.5">RX</text>
+  <!-- Point ambre -->
+  <circle cx="27" cy="6" r="3" fill="#E8C866"/>
+</svg>

@@ -1,0 +1,538 @@
+/* ═══════════════════════════════════════════════════════════
+   REVEX — Mobile-First Responsive Design
+   Vert Racing #0F2318 + Gris Nardo #4A4E5A
+   Breakpoints: 480px | 768px | 1024px | 1280px
+═══════════════════════════════════════════════════════════ */
+
+:root {
+  --deep:   #0F2318;
+  --forest: #1A3C2E;
+  --mid:    #2D5A46;
+  --sage:   #4A9065;
+  --light:  #8DB8A0;
+  --nardo:  #4A4E5A;
+  --steel:  #7A8090;
+  --silver: #B8BCC8;
+  --ghost:  #E8ECEB;
+  --cream:  #F4F6F4;
+  --white:  #FAFBFA;
+  --amber:  #E8C866;
+  --gold:   #C8A84B;
+  --r:      16px;   /* border-radius standard */
+  --nav-h:  62px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  max-width: 100vw;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ══════════════════════════════════════
+   NAVBAR RESPONSIVE
+══════════════════════════════════════ */
+
+.revex-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.mobile-burger {
+  display: none !important;
+}
+
+.revex-token { display: flex; }
+.revex-messages { display: flex; }
+
+/* ══════════════════════════════════════
+   GRIDS UTILITAIRES
+══════════════════════════════════════ */
+
+.kpi-grid     { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; }
+.dash-grid-2  { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.dash-grid-3  { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 1.5rem; }
+.form-2col    { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-3col    { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.register-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.dual-search  { display: grid; gap: 1.2rem; }
+.footer-grid  { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; }
+.two-col      { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.sidebar-layout { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; align-items: start; }
+
+/* Tabs scroll */
+.tabs-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  display: flex;
+}
+.tabs-scroll::-webkit-scrollbar { display: none; }
+
+/* Table wrap */
+.revex-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--r);
+}
+.revex-table-wrap table { min-width: 540px; }
+
+/* Page padding */
+.page-pad { padding: 2.5rem 2rem 4rem; }
+.section-pad-top { padding-top: 2.5rem; }
+
+/* Hero section */
+.hero-section { padding: 2.5rem 2rem 0; }
+
+/* Stats bar */
+.stats-bar { display: flex; justify-content: center; flex-wrap: wrap; }
+
+/* ══════════════════════════════════════
+   BOTTOM NAV MOBILE (app-like)
+══════════════════════════════════════ */
+
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #0F2318;
+  border-top: 1px solid rgba(74,144,101,0.25);
+  padding: 0.5rem 0 env(safe-area-inset-bottom, 0.5rem);
+  z-index: 300;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+}
+
+.mobile-bottom-nav a,
+.mobile-bottom-nav button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: rgba(244,246,244,0.5);
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  padding: 0;
+  transition: color 0.15s;
+  min-width: 50px;
+  text-transform: uppercase;
+}
+
+.mobile-bottom-nav a.active,
+.mobile-bottom-nav a:hover {
+  color: #E8C866;
+}
+
+.mobile-bottom-nav .nav-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+/* ══════════════════════════════════════
+   TABLET — max 1024px
+══════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .kpi-grid    { grid-template-columns: repeat(3, 1fr); }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .dash-grid-3 { grid-template-columns: 1fr 1fr; }
+  .sidebar-layout { grid-template-columns: 240px 1fr; }
+}
+
+/* ══════════════════════════════════════
+   MOBILE — max 768px
+══════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* Navbar: masquer les liens, afficher burger */
+  .revex-nav-links { display: none !important; }
+  .mobile-burger   { display: flex !important; }
+  .revex-messages span { display: none; }
+  .revex-token     { display: none; }
+
+  /* Bottom nav visible */
+  .mobile-bottom-nav { display: flex; justify-content: space-around; align-items: center; }
+
+  /* Add padding bottom so content not hidden behind bottom nav */
+  body { padding-bottom: 70px; }
+
+  /* Grids → 1 colonne */
+  .kpi-grid     { grid-template-columns: 1fr 1fr !important; }
+  .dash-grid-2  { grid-template-columns: 1fr !important; }
+  .dash-grid-3  { grid-template-columns: 1fr !important; }
+  .form-2col    { grid-template-columns: 1fr !important; }
+  .form-3col    { grid-template-columns: 1fr !important; }
+  .two-col      { grid-template-columns: 1fr !important; }
+  .footer-grid  { grid-template-columns: 1fr 1fr !important; gap: 1.5rem !important; }
+
+  /* Sidebar → full width */
+  .sidebar-layout { grid-template-columns: 1fr !important; }
+  .sidebar-col-panel { display: none; }
+  .sidebar-col-panel.open { display: block !important; }
+
+  /* Register cards → 1 par ligne */
+  .register-cards { grid-template-columns: 1fr !important; }
+
+  /* Page padding réduit */
+  .page-pad { padding: 1.2rem 1rem 2rem !important; }
+
+  /* Hero */
+  .hero-section { padding: 2rem 1rem 0 !important; }
+
+  /* Stats bar */
+  .stats-bar > div { border-right: none !important; padding: 0.4rem 1rem !important; }
+
+  /* Hero title */
+  h1 { word-break: break-word; }
+
+  /* Modal pleine hauteur bas */
+  .revex-modal {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .revex-modal > div {
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 92vh !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Cards + buttons plein largeur */
+  .mobile-full { width: 100% !important; }
+  .mobile-stack { flex-direction: column !important; }
+  .mobile-stack > * { width: 100% !important; }
+
+  /* Dual search → 1 col */
+  .dual-search { grid-template-columns: 1fr !important; max-width: 100% !important; }
+
+  /* Tabs: scroll horizontal */
+  .tabs-scroll { white-space: nowrap; padding-bottom: 2px; }
+}
+
+/* ══════════════════════════════════════
+   SMALL MOBILE — max 480px
+══════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .kpi-grid     { grid-template-columns: 1fr 1fr !important; }
+  .footer-grid  { grid-template-columns: 1fr !important; }
+
+  /* Typography */
+  h1 { font-size: clamp(1.8rem, 8vw, 2.5rem) !important; }
+  h2 { font-size: clamp(1.4rem, 6vw, 2rem) !important; }
+
+  /* Hero padding */
+  .hero-section { padding: 1.5rem 1rem 0 !important; }
+  .page-pad { padding: 1rem 0.8rem 1.5rem !important; }
+}
+
+/* ══════════════════════════════════════
+   UTILITAIRES
+══════════════════════════════════════ */
+
+.hide-mobile { display: block; }
+.show-mobile { display: none; }
+
+@media (max-width: 768px) {
+  .hide-mobile      { display: none !important; }
+  .show-mobile      { display: block !important; }
+  .show-mobile-flex { display: flex !important; }
+  .show-mobile-grid { display: grid !important; }
+}
+
+/* Safe area pour iPhone X+ */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-bottom-nav {
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Smooth scrolling pour listes */
+.scroll-x {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.scroll-x::-webkit-scrollbar { display: none; }
+.scroll-x > * { scroll-snap-align: start; }
+
+/* Product card min height */
+.product-card-img { height: 180px; }
+@media (max-width: 480px) {
+  .product-card-img { height: 140px; }
+}
+
+/* ══════════════════════════════════════
+   AUTO MARKETPLACE SIDEBAR MOBILE
+══════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .sidebar-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Sidebar hidden by default on mobile, slide in as overlay */
+  .sidebar-layout > div:first-child {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 250;
+    background: rgba(0,0,0,0.5);
+    padding: 1rem;
+  }
+  .sidebar-layout > div:first-child.open {
+    display: flex;
+    align-items: flex-start;
+  }
+  .sidebar-layout > div:first-child.open > div {
+    background: #fff;
+    border-radius: 16px;
+    max-height: 80vh;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 340px;
+    padding: 1.2rem;
+  }
+
+  /* Product cards smaller on mobile */
+  .product-card-img { height: 130px; }
+
+  /* Dashboard cards font size */
+  .kpi-grid > div { padding: 1rem !important; }
+
+  /* Admin tabs scroll */
+  .admin-tabs { overflow-x: auto; white-space: nowrap; }
+  .admin-tabs button { font-size: 0.78rem !important; padding: 0.5rem 0.8rem !important; }
+}
+
+@media (max-width: 480px) {
+  /* Pagination buttons */
+  .pagination-btn { padding: 0.35rem 0.6rem !important; font-size: 0.78rem !important; }
+
+  /* Product title truncate */
+  .product-title { font-size: 0.88rem !important; }
+
+  /* Stats bar */
+  .stats-bar > div { padding: 0.3rem 0.7rem !important; }
+  .stats-bar .stat-value { font-size: 1.3rem !important; }
+}
+
+/* ══════════════════════════════════════
+   ADDITIONAL MOBILE POLISH
+══════════════════════════════════════ */
+
+/* All flex containers wrap on mobile */
+@media (max-width: 768px) {
+  /* Headers with space-between */
+  div[style*="justifyContent:'space-between'"] {
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  /* Orders / product lists */
+  .revex-table-wrap,
+  div[style*="overflowX:'auto'"] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Product detail */
+  div[style*="gridTemplateColumns:'1fr 1fr'"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Input + button groups */
+  div[style*="display:'flex'"][style*="gap:'0.4rem'"] input {
+    min-width: 0;
+    flex: 1;
+  }
+
+  /* Cards padding */
+  div[style*="borderRadius:18"][style*="padding:'1.5rem'"],
+  div[style*="borderRadius:16"][style*="padding:'1.5rem'"] {
+    padding: 1rem !important;
+  }
+
+  /* Section headings */
+  div[style*="fontFamily"][style*="fontSize:'2.2rem'"] {
+    font-size: clamp(1.6rem, 6vw, 2.2rem) !important;
+  }
+  div[style*="fontFamily"][style*="fontSize:'2rem'"] {
+    font-size: clamp(1.4rem, 5vw, 2rem) !important;
+  }
+}
+
+/* ══════════════════════════════════════
+   SELLER / BUYER DASHBOARD MOBILE
+══════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* Filter tabs */
+  div[style*="display:'flex'"][style*="gap:'0.5rem'"][style*="flexWrap:'wrap'"] button {
+    font-size: 0.75rem !important;
+    padding: 0.3rem 0.7rem !important;
+  }
+
+  /* Order cards */
+  div[style*="borderRadius:14"][style*="overflow:'hidden'"],
+  div[style*="borderRadius:18"][style*="overflow:'hidden'"] {
+    border-radius: 12px !important;
+  }
+}
+
+/* ══════════════════════════════════════
+   FORMS MOBILE
+══════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important; /* Prevent iOS zoom */
+  }
+
+  /* Publish forms */
+  .form-2col, .form-3col {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Register step 1 */
+  .register-cards {
+    grid-template-columns: 1fr !important;
+  }
+  .register-cards > button {
+    padding: 1.2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    text-align: left !important;
+  }
+}
+
+/* ══════════════════════════════════════
+   LOT DETAIL / PRODUCT DETAIL MOBILE
+══════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* Image gallery */
+  div[style*="height:400"] { height: 240px !important; }
+  div[style*="height:360"] { height: 220px !important; }
+  div[style*="height:320"] { height: 200px !important; }
+
+  /* Bid/buy buttons */
+  div[style*="display:'flex'"][style*="gap:'1rem'"] > button,
+  div[style*="display:'flex'"][style*="gap:'1rem'"] > a {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+/* ══════════════════════════════════════
+   MESSAGES PAGE MOBILE
+══════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* Messages layout */
+  div[style*="gridTemplateColumns:'300px 1fr'"],
+  div[style*="gridTemplateColumns:'320px 1fr'"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ══════════════════════════════════════
+   AUTO MARKETPLACE — MOBILE SIDEBAR
+══════════════════════════════════════ */
+
+.auto-marketplace-grid {
+  grid-template-columns: 260px 1fr;
+}
+
+@media (max-width: 768px) {
+  .auto-marketplace-grid {
+    grid-template-columns: 1fr !important;
+    padding-left: clamp(0.8rem, 3vw, 1.5rem) !important;
+    padding-right: clamp(0.8rem, 3vw, 1.5rem) !important;
+  }
+
+  /* Sidebar masquée par défaut sur mobile */
+  .sidebar-col-panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 280;
+    background: rgba(0,0,0,0.55);
+    padding: 1rem;
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+
+  .sidebar-col-panel.open {
+    display: flex !important;
+  }
+
+  .sidebar-col-panel > div {
+    background: #fff;
+    border-radius: 18px;
+    padding: 1.2rem;
+    width: 100%;
+    max-width: 320px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  }
+
+  /* Bouton filtres mobile visible */
+  .show-mobile-flex {
+    display: flex !important;
+  }
+}
+
+/* Fix category grid mobile */
+@media (max-width: 480px) {
+  /* Categories 4-col → 2-col */
+  div[style*="repeat(auto-fill,minmax(min(140px"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  /* Product grid → 1 col */
+  div[style*="repeat(auto-fill,minmax(min(240px"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* Hero search full width */
+  div[style*="maxWidth:640"] {
+    max-width: 100% !important;
+  }
+  div[style*="maxWidth:640"] > div:first-child {
+    min-width: 0;
+    flex: 1;
+  }
+}
+
+/* Auto Product Detail - mobile 1 col */
+@media (max-width: 768px) {
+  .auto-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

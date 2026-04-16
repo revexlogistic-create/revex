@@ -1,0 +1,35 @@
+# render.yaml — Configuration déploiement Render.com
+# Placer à la racine du projet backend/
+
+services:
+  - type: web
+    name: revex-api
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: revex-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://revex.ma
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+databases:
+  - name: revex-db
+    databaseName: revex_db
+    user: revex_user
+    plan: free

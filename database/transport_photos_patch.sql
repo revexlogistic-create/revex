@@ -1,0 +1,1 @@
+ALTER TABLE transports ADD COLUMN IF NOT EXISTS vehicle_photos JSONB DEFAULT '[]';
