@@ -260,3 +260,4 @@ Plateforme développée selon le processus de vente REVEX (PDF fourni).
 Données de test basées sur le marché industriel marocain.
 
 **Stack complète :** React 18 + Node.js 18 + Express 4 + PostgreSQL 14
+"# revex" 
