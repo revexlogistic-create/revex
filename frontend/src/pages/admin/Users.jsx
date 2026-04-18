@@ -47,8 +47,16 @@ export default function AdminUsers() {
 
   const { data, isLoading } = useQuery(
     ['admin-users', tab],
-    function() { return api.get('/admin/users?status=' + (tab === 'all' ? '' : tab)).then(function(r) { return r.data; }); }
+    function() { return api.get('/admin/users?status=' + (tab === 'all' ? '' : tab) + '&role=seller').then(function(r) { return r.data; }); }
   );
+
+  const { data: qualifData } = useQuery(
+    'admin-qualifications',
+    function() { return api.get('/admin/qualifications').then(function(r) { return r.data; }); }
+  );
+
+  var qualifications = (qualifData && qualifData.qualifications) || [];
+  var pendingQualifs = qualifications.filter(function(q) { return q.status === 'pending' || q.status === 'in_review'; });
 
   const approveMutation = useMutation(
     function(userId) { return api.put('/admin/users/' + userId + '/status', { status:'active' }); },
@@ -97,6 +105,7 @@ export default function AdminUsers() {
           ['active',    '✅ Approuvés'],
           ['suspended', '❌ Rejetés'],
           ['all',       '📋 Tous'],
+          ['qualifications', '📋 Qualifications ('+pendingQualifs.length+')'],
         ].map(function(t) {
           return (
             <button key={t[0]} onClick={function() { setTab(t[0]); }}
@@ -127,8 +136,64 @@ export default function AdminUsers() {
         })}
       </div>
 
+      {/* Qualifications tab */}
+      {tab === 'qualifications' && (
+        <div style={{ display:'flex', flexDirection:'column', gap:'0.7rem' }}>
+          {qualifications.length === 0 ? (
+            <div style={{ textAlign:'center', padding:'3rem', background:C.white, borderRadius:16, border:'1px solid '+C.ghost, color:C.steel }}>
+              Aucune demande de qualification
+            </div>
+          ) : qualifications.map(function(q) {
+            return (
+              <div key={q.id} style={{ background:C.white, border:'1px solid '+C.ghost, borderRadius:16, padding:'1.2rem 1.5rem' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'0.8rem' }}>
+                  <div>
+                    <div style={{ fontWeight:700, color:C.deep }}>{q.company_name}</div>
+                    <div style={{ fontSize:'0.78rem', color:C.steel, marginTop:2 }}>{q.email} · {q.city}</div>
+                  </div>
+                  <div style={{ display:'flex', alignItems:'center', gap:'0.7rem' }}>
+                    <span style={{ background:q.status==='approved'?C.eco+'22':q.status==='rejected'?C.urgent+'22':C.amber+'22', color:q.status==='approved'?C.eco:q.status==='rejected'?C.urgent:C.amber, borderRadius:100, padding:'0.2rem 0.7rem', fontSize:'0.75rem', fontWeight:700 }}>
+                      {q.status==='approved'?'✅ Approuvé':q.status==='rejected'?'❌ Rejeté':q.status==='in_review'?'🔍 En révision':'⏳ En attente'}
+                    </span>
+                    {(q.status === 'pending' || q.status === 'in_review') && (
+                      <div style={{ display:'flex', gap:'0.5rem' }}>
+                        <button onClick={function() { approveMutation.mutate(q.seller_id); }}
+                          style={{ background:C.eco, color:'#fff', border:'none', borderRadius:100, padding:'0.4rem 0.9rem', fontSize:'0.78rem', fontWeight:700, cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }}>
+                          ✅ Approuver
+                        </button>
+                        <button onClick={function() { setSelected({id:q.seller_id, company_name:q.company_name, email:q.email}); setShowReject(true); }}
+                          style={{ background:C.urgent, color:'#fff', border:'none', borderRadius:100, padding:'0.4rem 0.9rem', fontSize:'0.78rem', fontWeight:600, cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }}>
+                          ❌ Rejeter
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))', gap:'0.5rem', marginTop:'0.8rem' }}>
+                  {[
+                    ['RC', q.rc_document_url ? '✅' : '❌'],
+                    ['ICE', q.ice_document_url ? '✅' : '❌'],
+                    ['Identité', q.identity_document_url ? '✅' : '❌'],
+                    ['Classification', q.stock_classification || '—'],
+                    ['Criticité', q.stock_criticality || '—'],
+                    ['Conformité', q.compliance_signed ? '✅ Signé' : '❌ Non signé'],
+                  ].map(function(kv) {
+                    return (
+                      <div key={kv[0]} style={{ background:C.ghost, borderRadius:8, padding:'0.4rem 0.7rem', fontSize:'0.75rem' }}>
+                        <span style={{ color:C.steel }}>{kv[0]}: </span>
+                        <span style={{ color:C.deep, fontWeight:600 }}>{kv[1]}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Table */}
-      {isLoading ? (
+      {tab !== 'qualifications' && (isLoading ? (
         <div style={{ textAlign:'center', padding:'3rem', color:C.steel }}>Chargement...</div>
       ) : filtered.length === 0 ? (
         <div style={{ textAlign:'center', padding:'3rem', background:C.white, borderRadius:16, border:'1px solid '+C.ghost, color:C.steel }}>
@@ -148,7 +213,14 @@ export default function AdminUsers() {
                       {(u.company_name||'?').substring(0,1).toUpperCase()}
                     </div>
                     <div>
+                      <div style={{ display:'flex', alignItems:'center', gap:'0.5rem' }}>
                       <div style={{ fontWeight:700, color:C.deep, fontSize:'0.92rem' }}>{u.company_name || '—'}</div>
+                      {qualifications.find(function(q){ return q.seller_id === u.id; }) && (
+                        <span style={{ background:'#EFF6FF', color:'#1D4ED8', borderRadius:100, padding:'0.1rem 0.5rem', fontSize:'0.68rem', fontWeight:700 }}>
+                          📋 Dossier soumis
+                        </span>
+                      )}
+                    </div>
                       <div style={{ fontSize:'0.78rem', color:C.steel, marginTop:2 }}>{u.email} · {u.role}</div>
                     </div>
                   </div>
@@ -240,6 +312,8 @@ export default function AdminUsers() {
             );
           })}
         </div>
+      )}
+
       )}
 
       {/* Modal rejet */}
