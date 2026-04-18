@@ -25,6 +25,7 @@ const Qualification = lazy(() => import('./pages/seller/Qualification'));
 const BuyerDash     = lazy(() => import('./pages/buyer/Dashboard'));
 const MyOrders      = lazy(() => import('./pages/buyer/MyOrders'));
 const SellerProfile = lazy(() => import('./pages/seller/Profile'));
+const UserProfile   = lazy(() => import('./pages/Profile'));
 const BuyerProfile  = lazy(() => import('./pages/buyer/Profile'));
 const MyQuotes      = lazy(() => import('./pages/buyer/MyQuotes'));
 const UrgentRequest = lazy(() => import('./pages/buyer/UrgentRequest'));
@@ -127,6 +128,7 @@ export default function App() {
                 <Route path="/buyer"               element={<PrivateRoute roles={['buyer','admin','distributor','acheteur_auto']}><BuyerDash /></PrivateRoute>} />
                 <Route path="/buyer/commandes"     element={<PrivateRoute roles={['buyer','admin','distributor','acheteur_auto']}><MyOrders /></PrivateRoute>} />
                 <Route path="/buyer/profil"        element={<PrivateRoute roles={['buyer','admin','distributor','acheteur_auto']}><BuyerProfile /></PrivateRoute>} />
+                <Route path="/profil"             element={<PrivateRoute><UserProfile /></PrivateRoute>} />
                 <Route path="/buyer/devis"         element={<PrivateRoute roles={['buyer','admin','distributor','acheteur_auto']}><MyQuotes /></PrivateRoute>} />
                 <Route path="/buyer/urgence"       element={<PrivateRoute roles={['buyer','admin','distributor','acheteur_auto']}><UrgentRequest /></PrivateRoute>} />
 
