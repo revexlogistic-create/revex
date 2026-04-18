@@ -4,11 +4,11 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { authenticate } = require('../middleware/auth');
-
+ 
 // ── Cloudinary (production) ou stockage local (dev) ──────────
 let cloudinary = null;
 let useCloudinary = false;
-
+ 
 if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
   try {
     cloudinary = require('cloudinary').v2;
@@ -23,7 +23,7 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
     console.log('⚠️  Cloudinary non disponible — stockage local utilisé');
   }
 }
-
+ 
 // ── Stockage local (fallback dev) ────────────────────────────
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
@@ -37,7 +37,7 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + '-' + Math.random().toString(36).slice(2) + ext);
   }
 });
-
+ 
 const upload = multer({
   storage: multer.memoryStorage(), // mémoire pour Cloudinary
   fileFilter: function(req, file, cb) {
@@ -49,25 +49,25 @@ const upload = multer({
   },
   limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5 * 1024 * 1024 }
 });
-
+ 
 // Upload local fallback
 const localUpload = multer({
   storage,
   limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5 * 1024 * 1024 }
 });
-
+ 
 function getBaseUrl(req) {
   if (process.env.BACKEND_URL) return process.env.BACKEND_URL;
   return req.protocol + '://' + req.get('host');
 }
-
+ 
 // ── POST /api/upload/images ───────────────────────────────────
 router.post('/images', authenticate, upload.array('images', 5), async (req, res) => {
   try {
     if (!req.files || !req.files.length) {
       return res.status(400).json({ error: 'Aucun fichier reçu' });
     }
-
+ 
     if (useCloudinary) {
       // Upload vers Cloudinary
       const urls = await Promise.all(req.files.map(function(file) {
@@ -84,7 +84,7 @@ router.post('/images', authenticate, upload.array('images', 5), async (req, res)
       }));
       return res.json({ urls, count: urls.length });
     }
-
+ 
     // Fallback local — sauvegarder sur disque
     const type = req.query.type || 'products';
     const dir = path.join(__dirname, '../uploads', type);
@@ -97,42 +97,43 @@ router.post('/images', authenticate, upload.array('images', 5), async (req, res)
       return baseUrl + '/uploads/' + type + '/' + filename;
     });
     return res.json({ urls, count: urls.length });
-
+ 
   } catch(err) {
     console.error('[upload/images]', err.message);
     res.status(500).json({ error: err.message });
   }
 });
-
+ 
 // ── POST /api/upload/document ─────────────────────────────────
 router.post('/document', authenticate, upload.single('document'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Aucun fichier reçu' });
-
-    if (useCloudinary && req.file.mimetype.startsWith('image')) {
-      const result = await new Promise(function(resolve, reject) {
+ 
+    if (useCloudinary) {
+      var result = await new Promise(function(resolve, reject) {
+        var folder = req.query.type ? 'revex/' + req.query.type : 'revex/documents';
         cloudinary.uploader.upload_stream(
-          { folder: 'revex/documents' },
+          { folder: folder, resource_type: 'auto' },
           function(err, r) { if(err) reject(err); else resolve(r); }
         ).end(req.file.buffer);
       });
       return res.json({ url: result.secure_url });
     }
-
-    const type = req.query.type || 'documents';
-    const dir = path.join(__dirname, '../uploads', type);
-    fs.mkdirSync(dir, { recursive: true });
-    const ext = path.extname(req.file.originalname).toLowerCase();
-    const filename = Date.now() + '-' + Math.random().toString(36).slice(2) + ext;
-    fs.writeFileSync(path.join(dir, filename), req.file.buffer);
-    const baseUrl = getBaseUrl(req);
-    res.json({ url: baseUrl + '/uploads/' + type + '/' + filename });
-
+ 
+    var docType = req.query.type || 'documents';
+    var docDir = path.join(__dirname, '../uploads', docType);
+    fs.mkdirSync(docDir, { recursive: true });
+    var docExt = path.extname(req.file.originalname).toLowerCase();
+    var docFilename = Date.now() + '-' + Math.random().toString(36).slice(2) + docExt;
+    fs.writeFileSync(path.join(docDir, docFilename), req.file.buffer);
+    var docBaseUrl = getBaseUrl(req);
+    res.json({ url: docBaseUrl + '/uploads/' + docType + '/' + docFilename });
+ 
   } catch(err) {
     res.status(500).json({ error: err.message });
   }
 });
-
+ 
 // ── POST /api/upload/stock-file ───────────────────────────────
 router.post('/stock-file', authenticate, upload.single('file'), function(req, res) {
   if (!req.file) return res.status(400).json({ error: 'Aucun fichier reçu' });
@@ -144,12 +145,12 @@ router.post('/stock-file', authenticate, upload.single('file'), function(req, re
   const baseUrl = getBaseUrl(req);
   res.json({ filename, url: baseUrl + '/uploads/stock/' + filename, size: req.file.size });
 });
-
+ 
 // ── DELETE /api/upload ────────────────────────────────────────
 router.delete('/', authenticate, function(req, res) {
   const { url } = req.body;
   if (!url) return res.status(400).json({ error: 'URL manquante' });
-
+ 
   // Cloudinary delete
   if (useCloudinary && url.includes('cloudinary.com')) {
     const parts = url.split('/');
@@ -162,13 +163,13 @@ router.delete('/', authenticate, function(req, res) {
     });
     return;
   }
-
+ 
   // Local delete
   let relativePath = url;
   try {
     if (url.startsWith('http')) relativePath = new URL(url).pathname;
   } catch(e) {}
-
+ 
   if (!relativePath.startsWith('/uploads/')) {
     return res.status(400).json({ error: 'URL invalide' });
   }
@@ -180,7 +181,7 @@ router.delete('/', authenticate, function(req, res) {
     res.status(500).json({ error: 'Erreur suppression' });
   }
 });
-
+ 
 // Gestion erreur multer
 router.use(function(err, req, res, next) {
   if (err && err.code === 'LIMIT_FILE_SIZE') {
@@ -188,5 +189,6 @@ router.use(function(err, req, res, next) {
   }
   next(err);
 });
-
+ 
 module.exports = router;
+ 
