@@ -86,6 +86,28 @@ export default function Home() {
   useEffect(function() { var h = function() { setIsMobile(window.innerWidth < 769); }; window.addEventListener('resize', h); return function() { window.removeEventListener('resize', h); }; }, []);
   const showPDR = isAuthenticated && user && user.role !== 'acheteur_auto';
   const [search, setSearch] = useState('');
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  useEffect(function() {
+    var handler = function(e) {
+      e.preventDefault();
+      setInstallPrompt(e);
+      // Show banner only on mobile
+      if (window.innerWidth < 769) setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return function() { window.removeEventListener('beforeinstallprompt', handler); };
+  }, []);
+
+  function handleInstall() {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    installPrompt.userChoice.then(function() {
+      setInstallPrompt(null);
+      setShowInstallBanner(false);
+    });
+  }
   const [searchAuto, setSearchAuto] = useState('');
 
   const { data: featuredData } = useQuery('featured-home', () => api.get('/products?limit=6&sort=views&is_auto=false').then(r => r.data));
