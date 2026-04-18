@@ -104,11 +104,13 @@ export default function AdminUsers() {
       {/* Tabs */}
       <div style={{ display:'flex', gap:'0.5rem', marginBottom:'1.2rem', flexWrap:'wrap' }}>
         {[
-          ['pending',   '⏳ En attente'],
-          ['active',    '✅ Approuvés'],
-          ['suspended', '❌ Rejetés'],
-          ['all',       '📋 Tous'],
-          ['qualifications', '📋 Qualifications ('+pendingQualifs.length+')'],
+          ['pending',      '⏳ En attente'],
+          ['under_review', '🔍 En révision'],
+          ['qualified',    '✅ Qualifiés'],
+          ['active',       '🟢 Actifs'],
+          ['suspended',    '❌ Rejetés'],
+          ['all',          '📋 Tous'],
+          ['qualifications','📋 Dossiers ('+pendingQualifs.length+')'],
         ].map(function(t) {
           return (
             <button key={t[0]} onClick={function() { setTab(t[0]); }}
@@ -125,9 +127,11 @@ export default function AdminUsers() {
       {/* Stats */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))', gap:'0.8rem', marginBottom:'1.5rem' }}>
         {[
-          ['⏳', 'En attente', users.filter(function(u){ return u.status==='pending'; }).length, C.amber],
-          ['✅', 'Approuvés',  users.filter(function(u){ return u.status==='active'; }).length,  C.eco],
-          ['❌', 'Rejetés',    users.filter(function(u){ return u.status==='suspended'; }).length, C.urgent],
+          ['⏳', 'En attente',  users.filter(function(u){ return u.status==='pending'; }).length,      C.amber],
+          ['🔍', 'En révision', users.filter(function(u){ return u.status==='under_review'; }).length, C.blue],
+          ['✅', 'Qualifiés',   users.filter(function(u){ return u.status==='qualified'; }).length,    C.eco],
+          ['🟢', 'Actifs',      users.filter(function(u){ return u.status==='active'; }).length,       C.forest],
+          ['❌', 'Rejetés',     users.filter(function(u){ return u.status==='suspended'; }).length,    C.urgent],
         ].map(function(s) {
           return (
             <div key={s[1]} style={{ background:C.white, border:'1px solid '+C.ghost, borderRadius:14, padding:'1rem', textAlign:'center' }}>
@@ -230,7 +234,7 @@ export default function AdminUsers() {
                   <div style={{ display:'flex', alignItems:'center', gap:'0.8rem', flexWrap:'wrap' }}>
                     <ScoreBadge score={score} />
                     <span style={{ background: u.status==='active'?C.eco+'22':u.status==='suspended'?C.urgent+'22':C.amber+'22', color:u.status==='active'?C.eco:u.status==='suspended'?C.urgent:C.amber, borderRadius:100, padding:'0.2rem 0.7rem', fontSize:'0.75rem', fontWeight:700 }}>
-                      {u.status==='active'?'✅ Approuvé':u.status==='suspended'?'❌ Rejeté':'⏳ En attente'}
+                      {u.status==='active'?'🟢 Actif':u.status==='qualified'?'✅ Qualifié':u.status==='under_review'?'🔍 En révision':u.status==='suspended'?'❌ Rejeté':'⏳ En attente'}
                     </span>
                     <span style={{ fontSize:'0.72rem', color:C.steel }}>{new Date(u.created_at).toLocaleDateString('fr-MA')}</span>
                   </div>
@@ -293,6 +297,23 @@ export default function AdminUsers() {
                         </button>
                         <button onClick={function(e){ e.stopPropagation(); setSelected(null); }}
                           style={{ background:'transparent', color:C.steel, border:'1.5px solid '+C.ghost, borderRadius:100, padding:'0.65rem 1rem', fontSize:'0.82rem', cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }}>
+                          Fermer
+                        </button>
+                      </div>
+                    )}
+                    {u.status === 'qualified' && (
+                      <div style={{ display:'flex', gap:'0.7rem', flexWrap:'wrap' }}>
+                        <button onClick={function(e){ e.stopPropagation(); approveMutation.mutate(u.id); }}
+                          disabled={approveMutation.isLoading}
+                          style={{ background:C.forest, color:'#fff', border:'none', borderRadius:100, padding:'0.65rem 1.5rem', fontWeight:700, fontSize:'0.85rem', cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }}>
+                          🟢 Activer l'accès complet
+                        </button>
+                        <button onClick={function(e){ e.stopPropagation(); setShowReject(true); }}
+                          style={{ background:C.urgent+'22', color:C.urgent, border:'1px solid '+C.urgent+'44', borderRadius:100, padding:'0.65rem 1.1rem', fontWeight:600, fontSize:'0.85rem', cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }}>
+                          ❌ Rejeter
+                        </button>
+                        <button onClick={function(e){ e.stopPropagation(); setSelected(null); }}
+                          style={{ background:'transparent', color:C.steel, border:'1.5px solid '+C.ghost, borderRadius:100, padding:'0.55rem 1rem', fontSize:'0.82rem', cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }}>
                           Fermer
                         </button>
                       </div>
