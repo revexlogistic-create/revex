@@ -47,7 +47,10 @@ router.put('/qualifications/:seller_id', ...isAdmin, async (req, res, next) => {
     if (!rows.length) return res.status(404).json({ error: 'Qualification introuvable' });
 
     if (status === 'approved') {
-      await query("UPDATE users SET status='active' WHERE id=$1 AND role='seller'", [req.params.seller_id]);
+      await query("UPDATE users SET status='qualified' WHERE id=$1", [req.params.seller_id]);
+    }
+    if (status === 'rejected') {
+      await query("UPDATE users SET status='suspended' WHERE id=$1", [req.params.seller_id]);
     }
 
     query(`INSERT INTO notifications (user_id,type,title,body) VALUES ($1,'qualification_result',$2,$3)`,
