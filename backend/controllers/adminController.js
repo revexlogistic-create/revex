@@ -92,8 +92,8 @@ const getUsers = async (req, res, next) => {
 
     const { rows } = await query(`
       SELECT id, email, role, status, company_name, contact_name,
-             phone, city, sector, ice_number, total_sales, total_purchases,
-             rating, reviews_count, created_at
+             phone, city, region, sector, ice_number, rc_number, total_sales, total_purchases,
+             rating, reviews_count, tokens_balance, created_at
       FROM users ${where}
       ORDER BY created_at DESC ${limitClause}
     `, params);
