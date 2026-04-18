@@ -47,7 +47,10 @@ export default function AdminUsers() {
 
   const { data, isLoading } = useQuery(
     ['admin-users', tab],
-    function() { return api.get('/admin/users?status=' + (tab === 'all' ? '' : tab) + '&role=seller').then(function(r) { return r.data; }); }
+    function() { 
+      var status = (tab === 'all' || tab === 'qualifications') ? '' : tab;
+      return api.get('/admin/users?status=' + status + '&role=seller').then(function(r) { return r.data; }); 
+    }
   );
 
   const { data: qualifData } = useQuery(
