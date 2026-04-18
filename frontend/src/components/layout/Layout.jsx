@@ -198,6 +198,7 @@ export default function Layout() {
                       {/* Menu items */}
                       {[
                         { to:dashPath,            icon:'⊞', label:'Mon dashboard' },
+                        { to: (user && user.role === 'acheteur_auto') ? '/buyer/profil' : (user && (user.role === 'seller' || user.role === 'distributor')) ? '/seller/profil' : '/buyer/profil', icon:'👤', label:'Mon profil' },
                         ...(user?.role === 'seller' || user?.role === 'distributor' ? [{ to:'/seller/achats', icon:'🛒', label:'Mes achats' }] : []),
                         { to:'/messages',          icon:'✉', label:'Messages', badge:unread },
                         { to:'/tokens',            icon:'◈', label:'Mes jetons' },
