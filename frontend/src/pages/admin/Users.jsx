@@ -189,22 +189,44 @@ export default function AdminUsers() {
                     )}
                   </div>
                 </div>
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))', gap:'0.5rem', marginTop:'0.8rem' }}>
-                  {[
-                    ['RC', q.rc_document_url ? '✅' : '❌'],
-                    ['ICE', q.ice_document_url ? '✅' : '❌'],
-                    ['Identité', q.identity_document_url ? '✅' : '❌'],
-                    ['Classification', q.stock_classification || '—'],
-                    ['Criticité', q.stock_criticality || '—'],
-                    ['Conformité', q.compliance_signed ? '✅ Signé' : '❌ Non signé'],
-                  ].map(function(kv) {
-                    return (
-                      <div key={kv[0]} style={{ background:C.ghost, borderRadius:8, padding:'0.4rem 0.7rem', fontSize:'0.75rem' }}>
-                        <span style={{ color:C.steel }}>{kv[0]}: </span>
-                        <span style={{ color:C.deep, fontWeight:600 }}>{kv[1]}</span>
-                      </div>
-                    );
-                  })}
+                {/* Documents uploadés */}
+                <div style={{ marginTop:'0.8rem' }}>
+                  <div style={{ fontSize:'0.72rem', color:C.steel, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'0.5rem' }}>
+                    Documents soumis
+                  </div>
+                  <div style={{ display:'flex', gap:'0.5rem', flexWrap:'wrap', marginBottom:'0.7rem' }}>
+                    {[
+                      { label:'RC', url: q.rc_document_url },
+                      { label:'ICE', url: q.ice_document_url },
+                      { label:'Identité', url: q.identity_document_url },
+                    ].map(function(doc) {
+                      return doc.url ? (
+                        <a key={doc.label} href={doc.url} target="_blank" rel="noreferrer"
+                          style={{ display:'inline-flex', alignItems:'center', gap:'0.3rem', background:'#EFF6FF', color:'#1D4ED8', border:'1px solid #BFDBFE', borderRadius:8, padding:'0.35rem 0.8rem', fontSize:'0.78rem', fontWeight:600, textDecoration:'none' }}>
+                          📄 {doc.label}
+                        </a>
+                      ) : (
+                        <span key={doc.label} style={{ display:'inline-flex', alignItems:'center', gap:'0.3rem', background:C.ghost, color:C.steel, borderRadius:8, padding:'0.35rem 0.8rem', fontSize:'0.78rem' }}>
+                          ❌ {doc.label} manquant
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))', gap:'0.4rem' }}>
+                    {[
+                      ['Classification', q.stock_classification],
+                      ['Criticité', q.stock_criticality],
+                      ['Rotation', q.stock_rotation],
+                      ['Conformité', q.compliance_signed ? '✅ Signé' : '❌ Non signé'],
+                    ].map(function(kv) {
+                      return (
+                        <div key={kv[0]} style={{ background:C.ghost, borderRadius:8, padding:'0.4rem 0.7rem', fontSize:'0.75rem' }}>
+                          <span style={{ color:C.steel }}>{kv[0]}: </span>
+                          <span style={{ color:kv[1]?C.deep:C.urgent, fontWeight:600 }}>{kv[1]||'—'}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             );
