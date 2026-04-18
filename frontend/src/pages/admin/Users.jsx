@@ -314,8 +314,6 @@ export default function AdminUsers() {
         </div>
       )}
 
-      )}
-
       {/* Modal rejet */}
       {showReject && selected && (
         <div onClick={function() { setShowReject(false); }}
