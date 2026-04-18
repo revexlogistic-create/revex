@@ -61,11 +61,24 @@ export default function AdminUsers() {
   var qualifications = (qualifData && qualifData.qualifications) || [];
   var pendingQualifs = qualifications.filter(function(q) { return q.status === 'pending' || q.status === 'in_review'; });
 
+  // Qualifier le dossier (pending → qualified)
+  const qualifyMutation = useMutation(
+    function(p) { return api.put('/admin/qualifications/' + p.sellerId, { status: p.status, review_notes: p.notes }); },
+    {
+      onSuccess: function() {
+        toast.success('✅ Dossier traité !');
+        qc.invalidateQueries('admin-qualifications');
+        qc.invalidateQueries('admin-users');
+      }
+    }
+  );
+
+  // Activer l'accès complet (qualified → active)
   const approveMutation = useMutation(
     function(userId) { return api.put('/admin/users/' + userId + '/activate-full'); },
     {
       onSuccess: function() {
-        toast.success('✅ Vendeur approuvé !');
+        toast.success('🟢 Accès complet activé !');
         qc.invalidateQueries('admin-users');
         setSelected(null);
       }
@@ -164,11 +177,11 @@ export default function AdminUsers() {
                     </span>
                     {(q.status === 'pending' || q.status === 'in_review') && (
                       <div style={{ display:'flex', gap:'0.5rem' }}>
-                        <button onClick={function() { approveMutation.mutate(q.seller_id); }}
+                        <button onClick={function() { qualifyMutation.mutate({ sellerId: q.seller_id, status: 'approved' }); }}
                           style={{ background:C.eco, color:'#fff', border:'none', borderRadius:100, padding:'0.4rem 0.9rem', fontSize:'0.78rem', fontWeight:700, cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }}>
-                          ✅ Approuver
+                          ✅ Approuver dossier
                         </button>
-                        <button onClick={function() { setSelected({id:q.seller_id, company_name:q.company_name, email:q.email}); setShowReject(true); }}
+                        <button onClick={function() { qualifyMutation.mutate({ sellerId: q.seller_id, status: 'rejected', notes: 'Dossier incomplet' }); }}
                           style={{ background:C.urgent, color:'#fff', border:'none', borderRadius:100, padding:'0.4rem 0.9rem', fontSize:'0.78rem', fontWeight:600, cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }}>
                           ❌ Rejeter
                         </button>
