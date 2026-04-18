@@ -62,7 +62,7 @@ export default function AdminUsers() {
   var pendingQualifs = qualifications.filter(function(q) { return q.status === 'pending' || q.status === 'in_review'; });
 
   const approveMutation = useMutation(
-    function(userId) { return api.put('/admin/users/' + userId + '/status', { status:'active' }); },
+    function(userId) { return api.put('/admin/users/' + userId + '/activate-full'); },
     {
       onSuccess: function() {
         toast.success('✅ Vendeur approuvé !');
