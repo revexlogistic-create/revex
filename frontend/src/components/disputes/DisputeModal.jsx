@@ -38,8 +38,8 @@ export default function DisputeModal({ order, onClose }) {
     {
       onSuccess: () => {
         toast.success('⚖️ Litige ouvert — Notre équipe vous contactera sous 24h.');
-        qc.invalidateQueries('buyer-orders-all');
-        qc.invalidateQueries('my-disputes');
+        qc.invalidateQueries('orders-buyer');
+        qc.invalidateQueries('orders-buyer');
         onClose();
       },
       onError: e => toast.error(e.response?.data?.error || 'Erreur ouverture litige')
